@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,13 +32,42 @@ class UserAuthController extends Controller
 
         $user = User::create($userData);
 
-        $authToken = $user->createToken('access-token-' . $user->id)->plainTextToken;
+        return response()->json(new UserResource($user), 200);
+    }
 
-        return response()->json([
-            'id' => $user->id,
-            'first_name' => $user->first_name,
-            'last_name' => $user->last_name,
-            'auth_token' => $authToken
+    public function login(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string',
+            'password' => 'required'
         ]);
+
+        if($validator->fails()){
+            return response()->json([
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $loginData = $validator->validated();
+
+        $foundUser = User::where('email', $loginData['email'])->first();
+
+        if(!$foundUser){
+            return response()->json([
+                'errors' => [
+                    'Authentication failed!'
+                ]
+            ], 401);
+        }
+
+        if(!Hash::check($loginData['password'], $foundUser->password)){
+            return response()->json([
+                'errors' => [
+                    'Authentication failed!'
+                ]
+            ], 401);
+        }
+
+        return response()->json(new UserResource($foundUser), 200);
     }
 }

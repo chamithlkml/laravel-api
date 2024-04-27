@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use Faker\Factory as Faker;
-
 use Tests\TestCase;
+
+use Faker\Factory as Faker;
+use Illuminate\Support\Facades\Log;
 
 class UserAuthTest extends TestCase
 {
-
     /**
      * Test POST /api/auth/register
      */
@@ -16,11 +16,12 @@ class UserAuthTest extends TestCase
     {
         $faker = Faker::create();
         $email = $faker->email;
+        $password = $faker->password;
         $response = $this->post('/api/auth/register', [
             'first_name' => $faker->firstName,
             'last_name' => $faker->lastName,
             'email' => $email,
-            'password' => $faker->password
+            'password' => $password
         ]);
 
         $response->assertStatus(200);
@@ -52,6 +53,36 @@ class UserAuthTest extends TestCase
             'errors' => [
                 'password' => true
             ]
+        ]);
+    }
+
+    /**
+     * Returns auth token
+     *
+     * @return void
+     */
+    public function test_application_logins(): void
+    {
+        $faker = Faker::create();
+        $email = $faker->email;
+        $password = $faker->password;
+        
+        $response = $this->post('/api/auth/register', [
+            'first_name' => $faker->firstName,
+            'last_name' => $faker->lastName,
+            'email' => $email,
+            'password' => $password
+        ]);
+        $response->assertStatus(200);
+
+        $loginResponse = $this->post('/api/auth/login', [
+            'email' => $email,
+            'password' => $password
+        ]);
+        $loginResponse->assertStatus(200);
+        $loginResponse->assertJson([
+            'id' => true,
+            'auth_token' => true
         ]);
     }
 }
