@@ -16,7 +16,10 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //
+        $products = Product::orderByDesc('created_at')
+            ->paginate(10);
+
+        return response()->json(ProductResource::collection($products), 200);
     }
 
     /**
