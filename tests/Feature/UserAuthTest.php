@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class UserAuthTest extends TestCase
 {
+
     /**
      * Test POST /api/auth/register
      */
@@ -16,12 +17,11 @@ class UserAuthTest extends TestCase
     {
         $faker = Faker::create();
         $email = $faker->email;
-        $password = $faker->password;
         $response = $this->post('/api/auth/register', [
             'first_name' => $faker->firstName,
             'last_name' => $faker->lastName,
             'email' => $email,
-            'password' => $password
+            'password' => $faker->password
         ]);
 
         $response->assertStatus(200);
